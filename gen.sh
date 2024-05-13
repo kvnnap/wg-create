@@ -33,11 +33,11 @@ create_pair() {
     local force_prv="false"
     local preshared=""
 
-    local path="$name/$name"
+    local path="$BASE_DIR/$name/$name"
     local prev_umask=$(umask)
     
     umask $orig_umask
-    mkdir -p $name
+    mkdir -p "$BASE_DIR/$name"
     umask 077
 
     if [ ! -f "$path.private" ]; then
@@ -70,6 +70,7 @@ orig_umask=$(umask)
 umask 077
 
 ESCAPE='s/\//\\\//g'
+BASE_DIR=keys
 
 cidr_to_ip_range "$CIDR"
 ip_start="${result[0]}"
@@ -91,7 +92,7 @@ SERVER_IP="$result"
 create_pair "server" "false"
 SERVER_PRIVATE_KEY="${result[0]}"
 SERVER_PUBLIC_KEY="${result[1]}"
-sed -e "s/SERVER_IP/$SERVER_IP/g" -e "s/SERVER_PORT/$SERVER_PORT/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/SERVER_PRIVATE_KEY/$SERVER_PRIVATE_KEY/g" server.template > server/server.conf
+sed -e "s/SERVER_IP/$SERVER_IP/g" -e "s/SERVER_PORT/$SERVER_PORT/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/SERVER_PRIVATE_KEY/$SERVER_PRIVATE_KEY/g" templates/server.template > $BASE_DIR/server/server.conf
 
 # Gen clients
 ip=$(($first_ip + 1))
@@ -101,7 +102,7 @@ for dev in "${DEVICES[@]}"; do
         continue
     fi
 
-    path="$dev/$dev"
+    path="$BASE_DIR/$dev/$dev"
     create_pair "$dev" "true"
     CLIENT_PRIVATE_KEY="${result[0]}"
     CLIENT_PUBLIC_KEY="${result[1]}"
@@ -110,9 +111,9 @@ for dev in "${DEVICES[@]}"; do
     int_ip_to_string $ip
     CLIENT_IP="$result"
 
-    sed -e "s/CLIENT_NAME/$dev/g" -e "s/CLIENT_PUBLIC_KEY/$CLIENT_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/CLIENT_IP/$CLIENT_IP/g" server-peer.template >> server/server.conf
+    sed -e "s/CLIENT_NAME/$dev/g" -e "s/CLIENT_PUBLIC_KEY/$CLIENT_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/CLIENT_IP/$CLIENT_IP/g" templates/server-peer.template >> $BASE_DIR/server/server.conf
     
-    sed -e "s/CLIENT_NAME/$dev/g" -e "s/ALLOWED_IPS/$ALLOWED_IPS/g" -e "s/IP_START/$IP_START/g" -e "s/CLIENT_IP/$CLIENT_IP/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/CLIENT_PRIVATE_KEY/$CLIENT_PRIVATE_KEY/g" -e "s/CLIENT_DNS/$CLIENT_DNS/g" -e "s/SERVER_PUBLIC_KEY/$SERVER_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/SERVER_HOST/$SERVER_HOST/g" -e "s/SERVER_PORT/$SERVER_PORT/g" peer.template > $path.conf
+    sed -e "s/CLIENT_NAME/$dev/g" -e "s/ALLOWED_IPS/$ALLOWED_IPS/g" -e "s/IP_START/$IP_START/g" -e "s/CLIENT_IP/$CLIENT_IP/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/CLIENT_PRIVATE_KEY/$CLIENT_PRIVATE_KEY/g" -e "s/CLIENT_DNS/$CLIENT_DNS/g" -e "s/SERVER_PUBLIC_KEY/$SERVER_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/SERVER_HOST/$SERVER_HOST/g" -e "s/SERVER_PORT/$SERVER_PORT/g" templates/peer.template > $path.conf
     qrencode -r $path.conf -o $path.png
 
     ((ip++))

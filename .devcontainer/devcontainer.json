@@ -1,0 +1,6 @@
+{
+    "name": "wg-create Dev",
+    "build": {
+        "dockerfile": "Dockerfile"
+    }
+}
