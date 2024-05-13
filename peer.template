@@ -1,0 +1,12 @@
+# CLIENT_NAME
+
+[Interface]
+Address = CLIENT_IP/PREFIX_LENGTH
+PrivateKey = CLIENT_PRIVATE_KEY
+DNS = CLIENT_DNS
+
+[Peer]
+PublicKey = SERVER_PUBLIC_KEY
+PresharedKey = PRESHARED_KEY
+Endpoint = SERVER_HOST:SERVER_PORT
+AllowedIPs = ALLOWED_IPS
