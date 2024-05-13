@@ -133,3 +133,9 @@ for dev in "${DEVICES[@]}"; do
 
     ((ip++))
 done
+
+# Move server config to config dir for deployment
+umask $orig_umask
+mkdir -p wgsrv/config
+umask 077
+cp $BASE_DIR/server/server.conf wgsrv/config

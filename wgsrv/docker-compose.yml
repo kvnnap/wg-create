@@ -1,0 +1,13 @@
+version: '3'
+services:
+  streamvpn:
+    container_name: wireguard
+    image: kvnnap/wireguard:latest
+    build: .
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ${PWD}/config:/etc/wireguard:ro
+    ports:
+      - 51820:51820/udp
