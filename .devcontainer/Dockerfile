@@ -8,7 +8,8 @@ ARG HOME=/home/$MYUSER
 
 RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get update \
- && apt-get -y --no-install-recommends install sudo wireguard-tools iptables qrencode git \
+ && apt-get -y --no-install-recommends install sudo wireguard-tools iptables qrencode \
+ && apt-get -y install git \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* \
 #  && useradd -ms /bin/bash $MYUSER \
