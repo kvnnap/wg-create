@@ -1,5 +1,5 @@
 services:
-  streamvpn:
+  wireguard:
     container_name: wireguard
     image: kvnnap/wireguard:latest
     build: .
