@@ -1,11 +1,24 @@
 #!/bin/bash
 
-CIDR="10.0.0.0/29"
-DEVICES=("kitchen" "living" "bedroom" "studio")
-ALLOWED_IPS="IP_START\\/PREFIX_LENGTH"
-SERVER_HOST=addr.duckdns.org
-SERVER_PORT=51820
-CLIENT_DNS=1.1.1.1
+CIDR=${CIDR:-"10.0.0.0/29"}
+DEVICES=${DEVICES:-"kitchen,living,bedroom,studio"}
+ALLOWED_IPS=${ALLOWED_IPS:-"IP_START\\/PREFIX_LENGTH"}
+SERVER_HOST=${SERVER_HOST:-"addr.duckdns.org"}
+SERVER_PORT=${SERVER_PORT:-"51820"}
+CLIENT_DNS=${CLIENT_DNS:-"1.1.1.1"}
+
+if [ "$CLIENT_DNS" ]; then
+    DNS_EQUALS_CLIENT_DNS="DNS = $CLIENT_DNS"
+fi
+
+# Function to convert comma-separated list into an array
+comma_separated_to_array() {
+    local comma_separated_list="$1"
+    local -n array_ref="$2"  # Reference to the array variable
+    
+    # Set IFS to comma
+    IFS=',' read -r -a array_ref <<< "$comma_separated_list"
+}
 
 cidr_to_ip_range() {
     local cidr=$1
@@ -65,6 +78,8 @@ create_pair() {
     declare -g result=("$private" "$public" "$preshared")
 }
 
+comma_separated_to_array "$DEVICES" DEVICES
+
 # UMASK stuff
 orig_umask=$(umask)
 umask 077
@@ -113,7 +128,7 @@ for dev in "${DEVICES[@]}"; do
 
     sed -e "s/CLIENT_NAME/$dev/g" -e "s/CLIENT_PUBLIC_KEY/$CLIENT_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/CLIENT_IP/$CLIENT_IP/g" templates/server-peer.template >> $BASE_DIR/server/server.conf
     
-    sed -e "s/CLIENT_NAME/$dev/g" -e "s/ALLOWED_IPS/$ALLOWED_IPS/g" -e "s/IP_START/$IP_START/g" -e "s/CLIENT_IP/$CLIENT_IP/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/CLIENT_PRIVATE_KEY/$CLIENT_PRIVATE_KEY/g" -e "s/CLIENT_DNS/$CLIENT_DNS/g" -e "s/SERVER_PUBLIC_KEY/$SERVER_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/SERVER_HOST/$SERVER_HOST/g" -e "s/SERVER_PORT/$SERVER_PORT/g" templates/peer.template > $path.conf
+    sed -e "s/CLIENT_NAME/$dev/g" -e "s/ALLOWED_IPS/$ALLOWED_IPS/g" -e "s/IP_START/$IP_START/g" -e "s/CLIENT_IP/$CLIENT_IP/g" -e "s/PREFIX_LENGTH/$PREFIX_LENGTH/g" -e "s/CLIENT_PRIVATE_KEY/$CLIENT_PRIVATE_KEY/g" -e "s/DNS_EQUALS_CLIENT_DNS/$DNS_EQUALS_CLIENT_DNS/g" -e "s/SERVER_PUBLIC_KEY/$SERVER_PUBLIC_KEY/g" -e "s/PRESHARED_KEY/$PRESHARED_KEY/g" -e "s/SERVER_HOST/$SERVER_HOST/g" -e "s/SERVER_PORT/$SERVER_PORT/g" templates/peer.template > $path.conf
     qrencode -r $path.conf -o $path.png
 
     ((ip++))
